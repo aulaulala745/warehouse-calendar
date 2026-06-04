@@ -18,12 +18,11 @@
     --ink:#19211c;
     --muted:#6b7670;
     --line:#e4ded1;
-    --deliver:#1f9d6b;        /* мы везём */
+    --deliver:#1f9d6b;        /* зелёный — таймслот */
     --deliver-soft:#dff3e9;
     --deliver-ink:#0f6444;
-    --slot:#e8842a;           /* таймслот */
-    --slot-soft:#fdebd9;
-    --slot-ink:#a8551a;
+    --gray-bd:#c6cbc4;        /* серый кружок — день привоза */
+    --gray-fill:#dfe3dc;      /* выбранный день привоза */
     --accent:#19211c;
     --radius:18px;
     --shadow:0 1px 2px rgba(25,33,28,.04), 0 12px 30px -18px rgba(25,33,28,.28);
@@ -38,9 +37,8 @@
     --deliver:#34c98a;
     --deliver-soft:#15301f;
     --deliver-ink:#7fe6b6;
-    --slot:#f59b46;
-    --slot-soft:#3a2410;
-    --slot-ink:#ffc78a;
+    --gray-bd:#3c443c;
+    --gray-fill:#333b33;
     --accent:#eef2ec;
     --shadow:0 1px 2px rgba(0,0,0,.3), 0 16px 36px -20px rgba(0,0,0,.7);
   }
@@ -62,7 +60,7 @@
   .head .dot{width:9px;height:9px;border-radius:50%;background:var(--deliver);box-shadow:0 0 0 4px var(--deliver-soft)}
   .head h1{
     font-family:var(--font-display);
-    font-weight:700;font-size:15px;letter-spacing:.02em;
+    font-weight:700;font-size:16px;letter-spacing:.02em;
     margin:0;text-transform:uppercase;
   }
 
@@ -78,8 +76,8 @@
   }
   .picker-btn:active{transform:scale(.99)}
   .picker-btn .lbl{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
-  .picker-btn .cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-  .picker-btn .val{font-family:var(--font-display);font-weight:600;font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+  .picker-btn .cap{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .picker-btn .val{font-family:var(--font-display);font-weight:600;font-size:19px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
   .chev{flex:none;width:22px;height:22px;color:var(--muted);transition:transform .25s ease}
   .picker.open .chev{transform:rotate(180deg)}
 
@@ -95,19 +93,19 @@
   .search{padding:10px;border-bottom:1px solid var(--line)}
   .search input{
     width:100%;border:none;outline:none;background:var(--bg);
-    border-radius:12px;padding:11px 13px;font-family:inherit;font-size:15px;color:var(--ink);
+    border-radius:12px;padding:12px 13px;font-family:inherit;font-size:16px;color:var(--ink);
   }
   .search input::placeholder{color:var(--muted)}
   .list{overflow-y:auto;-webkit-overflow-scrolling:touch}
   .opt{
     padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;
-    cursor:pointer;border-bottom:1px solid var(--line);font-size:15px;
+    cursor:pointer;border-bottom:1px solid var(--line);font-size:16px;
   }
   .opt:last-child{border-bottom:none}
   .opt:active{background:var(--bg)}
   .opt.sel{background:var(--deliver-soft)}
   .opt .nm{font-weight:500}
-  .opt .pr{font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+  .opt .pr{font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
   .opt.sel .pr{color:var(--deliver-ink)}
 
   /* tariff */
@@ -117,10 +115,14 @@
     display:flex;align-items:center;justify-content:space-between;
     box-shadow:var(--shadow);
   }
-  .tariff .t-cap{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
-  .tariff .t-sub{font-size:13px;opacity:.7;margin-top:3px}
-  .tariff .t-val{font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
-  .tariff .t-val small{font-size:14px;font-weight:600;margin-left:3px;opacity:.75}
+  .tariff .t-cap{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+  .tariff .t-sub{font-size:14px;opacity:.7;margin-top:3px}
+  .tariff .t-val{font-family:var(--font-display);font-weight:800;font-size:33px;line-height:1;font-variant-numeric:tabular-nums}
+  .tariff .t-val small{font-size:15px;font-weight:600;margin-left:3px;opacity:.75}
+
+  /* hint */
+  .hint{font-size:13.5px;color:var(--muted);margin:0 4px 10px;line-height:1.4}
+  .hint b{color:var(--ink);font-weight:600}
 
   /* calendar */
   .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 16px}
@@ -131,43 +133,44 @@
     transition:transform .12s ease,background .12s ease;
   }
   .navbtn:active{transform:scale(.92);background:var(--bg2)}
-  .cal-title{font-family:var(--font-display);font-weight:600;font-size:17px;text-align:center}
-  .cal-title span{display:block;font-family:var(--font-body);font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
+  .cal-title{font-family:var(--font-display);font-weight:600;font-size:18px;text-align:center}
+  .cal-title span{display:block;font-family:var(--font-body);font-weight:500;font-size:13px;color:var(--muted);margin-top:2px}
 
   .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
-  .dow div{text-align:center;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 0}
-  .dow div.we{color:var(--slot-ink)}
+  .dow div{text-align:center;font-size:12.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 0}
 
   .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
   .cell{
-    aspect-ratio:1/1;border-radius:13px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;font-size:15px;font-weight:500;
-    position:relative;font-variant-numeric:tabular-nums;
-    border:1px solid transparent;
+    aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    position:relative;font-size:16.5px;font-weight:500;color:var(--ink);
   }
   .cell.empty{visibility:hidden}
-  .cell.deliver{background:var(--deliver-soft);color:var(--deliver-ink);font-weight:700}
-  .cell.slot{background:var(--slot-soft);color:var(--slot-ink);font-weight:700}
-  .cell.both{
-    background:linear-gradient(135deg,var(--deliver-soft) 0 50%,var(--slot-soft) 50% 100%);
-    color:var(--ink);font-weight:700;
+  .cell .day{
+    width:84%;aspect-ratio:1/1;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid transparent;font-variant-numeric:tabular-nums;
+    transition:background .15s ease,border-color .15s ease,color .15s ease,transform .1s ease;
   }
-  .cell .tag{font-size:8px;font-weight:600;letter-spacing:.02em;line-height:1;margin-top:3px;opacity:.85}
-  .cell.deliver .tag{color:var(--deliver)}
-  .cell.slot .tag{color:var(--slot)}
-  .cell.today{box-shadow:0 0 0 2px var(--accent) inset}
-  .cell .num{line-height:1}
+  /* день привоза — серый кружок (кликабельный) */
+  .cell.deliver{cursor:pointer}
+  .cell.deliver .day{border-color:var(--gray-bd)}
+  .cell.deliver:active .day{transform:scale(.88)}
+  /* выбранный день привоза — залитый серый */
+  .cell.active .day{background:var(--gray-fill);border-color:var(--gray-fill);font-weight:700}
+  /* таймслот — зелёный кружок */
+  .cell.slot-on .day{background:var(--deliver);border-color:var(--deliver);color:#fff;font-weight:700}
+  /* сегодня */
+  .cell.today .day{outline:2px solid var(--accent);outline-offset:1px}
 
   /* legend */
-  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;padding:0 4px}
-  .leg{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
-  .leg .sw{width:16px;height:16px;border-radius:6px;flex:none}
-  .leg .sw.d{background:var(--deliver-soft);border:1px solid var(--deliver)}
-  .leg .sw.s{background:var(--slot-soft);border:1px solid var(--slot)}
-  .leg .sw.b{background:linear-gradient(135deg,var(--deliver-soft) 0 50%,var(--slot-soft) 50% 100%);border:1px solid var(--line)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;padding:0 4px}
+  .leg{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+  .leg .sw{width:16px;height:16px;border-radius:50%;flex:none;box-sizing:border-box}
+  .leg .sw.ring{border:2px solid var(--gray-bd);background:transparent}
+  .leg .sw.green{background:var(--deliver)}
   .leg b{color:var(--ink);font-weight:600}
 
-  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:22px;opacity:.8}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;opacity:.8;line-height:1.5}
 </style>
 </head>
 <body>
@@ -198,6 +201,8 @@
     <div class="t-val" id="tariffVal">—</div>
   </div>
 
+  <div class="hint" id="hint">Выберите склад — дни привоза отметятся серым кружком. Нажмите на день привоза, чтобы увидеть <b>дату таймслота</b>.</div>
+
   <div class="cal">
     <div class="cal-nav">
       <button class="navbtn" id="prev" type="button" aria-label="Назад">
@@ -209,18 +214,17 @@
       </button>
     </div>
     <div class="dow">
-      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div class="we">Сб</div><div class="we">Вс</div>
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
     </div>
     <div class="grid" id="grid"></div>
 
     <div class="legend">
-      <div class="leg"><span class="sw d"></span><b>Мы везём</b>&nbsp;10:00–15:00</div>
-      <div class="leg"><span class="sw s"></span><b>Таймслот</b></div>
-      <div class="leg"><span class="sw b"></span>Оба</div>
+      <div class="leg"><span class="sw ring"></span><b>Мы везём</b>&nbsp;— нажмите</div>
+      <div class="leg"><span class="sw green"></span><b>Таймслот</b></div>
     </div>
   </div>
 
-  <div class="foot">Листайте месяцы стрелками • данные по складам</div>
+  <div class="foot">Нажмите серый день привоза — подсветим дату таймслота зелёным<br>Листайте месяцы стрелками</div>
 
 <script>
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -246,6 +250,7 @@ const WAREHOUSES = [
 
 // state
 let selected = null;
+let selectedDate = null;          // выбранный день привоза (ключ y-m-d)
 let view = new Date();
 view = new Date(view.getFullYear(), view.getMonth(), 1);
 
@@ -256,6 +261,7 @@ const whVal=$("whVal"), tariffVal=$("tariffVal");
 const grid=$("grid"), calTitle=$("calTitle"), calSub=$("calSub");
 
 function haptic(t){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t||"light"); }catch(e){} }
+function keyOf(y,m,d){ return y+"-"+m+"-"+d; }
 
 // build picker list
 function renderList(filter){
@@ -272,6 +278,7 @@ function renderList(filter){
 
 function choose(w){
   selected=w;
+  selectedDate=null;                // сбрасываем выбор при смене склада
   whVal.textContent=w.name;
   tariffVal.innerHTML=`${w.tariff}<small>₽</small>`;
   haptic("light");
@@ -284,7 +291,33 @@ pickerBtn.addEventListener("click",e=>{ e.stopPropagation(); picker.classList.co
 searchEl.addEventListener("input",()=>renderList(searchEl.value));
 document.addEventListener("click",e=>{ if(!picker.contains(e.target)) closeMenu(); });
 
-// calendar
+// логика: дата привоза -> ближайшая дата таймслота (после неё)
+// принцип: i-й день недели "мы везём" -> i-й день недели "таймслот"
+function slotKeyForDelivery(dateObj){
+  const wd=dateObj.getDay();
+  const idx=selected.deliver.findIndex(x=>WD[x]===wd);
+  if(idx<0 || !selected.slot[idx]) return null;
+  const target=WD[selected.slot[idx]];
+  let add=(target-wd+7)%7; if(add===0) add=7;   // строго следующий такой день
+  const t=new Date(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate()+add);
+  return keyOf(t.getFullYear(),t.getMonth(),t.getDate());
+}
+
+function greenSet(){
+  const s=new Set();
+  if(!selected || !selectedDate) return s;
+  const p=selectedDate.split("-").map(Number);
+  const sk=slotKeyForDelivery(new Date(p[0],p[1],p[2]));
+  if(sk) s.add(sk);
+  return s;
+}
+
+function toggleDelivery(k){
+  selectedDate = (selectedDate===k) ? null : k;   // только один день за раз
+  haptic("light");
+  renderCalendar();
+}
+
 function dowSet(arr){ return new Set(arr.map(d=>WD[d])); }
 
 function renderCalendar(){
@@ -301,24 +334,25 @@ function renderCalendar(){
   for(let i=0;i<lead;i++){ const c=document.createElement("div"); c.className="cell empty"; grid.appendChild(c); }
 
   const dSet = selected?dowSet(selected.deliver):new Set();
-  const sSet = selected?dowSet(selected.slot):new Set();
+  const green = greenSet();
 
   for(let d=1;d<=days;d++){
     const date=new Date(y,m,d);
     const wd=date.getDay();
-    const isD=dSet.has(wd), isS=sSet.has(wd);
+    const k=keyOf(y,m,d);
+    const isDeliver=dSet.has(wd);
+    const isActive=(selectedDate===k);
+    const isSlot=green.has(k);
+
     const c=document.createElement("div");
     let cls="cell";
-    if(isD&&isS) cls+=" both";
-    else if(isD) cls+=" deliver";
-    else if(isS) cls+=" slot";
+    if(isDeliver) cls+=" deliver";
+    if(isActive)  cls+=" active";
+    if(isSlot)    cls+=" slot-on";
     if(date.getTime()===today.getTime()) cls+=" today";
     c.className=cls;
-    let tag="";
-    if(isD&&isS) tag="везём+слот";
-    else if(isD) tag="везём";
-    else if(isS) tag="слот";
-    c.innerHTML=`<span class="num">${d}</span>${tag?`<span class="tag">${tag}</span>`:""}`;
+    c.innerHTML=`<span class="day">${d}</span>`;
+    if(isDeliver) c.addEventListener("click",()=>toggleDelivery(k));
     grid.appendChild(c);
   }
 }
