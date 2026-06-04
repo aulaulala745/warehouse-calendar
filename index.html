@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>График поставок</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@100..900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font-body:'Google Sans Flex',-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;
+    --font-display:'Google Sans Flex',-apple-system,system-ui,sans-serif;
+    --bg:#f4f1ea;
+    --bg2:#ece7db;
+    --card:#ffffff;
+    --ink:#19211c;
+    --muted:#6b7670;
+    --line:#e4ded1;
+    --deliver:#1f9d6b;        /* мы везём */
+    --deliver-soft:#dff3e9;
+    --deliver-ink:#0f6444;
+    --slot:#e8842a;           /* таймслот */
+    --slot-soft:#fdebd9;
+    --slot-ink:#a8551a;
+    --accent:#19211c;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(25,33,28,.04), 0 12px 30px -18px rgba(25,33,28,.28);
+  }
+  .dark{
+    --bg:#10130f;
+    --bg2:#161a14;
+    --card:#1b201a;
+    --ink:#eef2ec;
+    --muted:#97a39a;
+    --line:#2a312a;
+    --deliver:#34c98a;
+    --deliver-soft:#15301f;
+    --deliver-ink:#7fe6b6;
+    --slot:#f59b46;
+    --slot-soft:#3a2410;
+    --slot-ink:#ffc78a;
+    --accent:#eef2ec;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 16px 36px -20px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font-body);
+    background:
+      radial-gradient(120% 80% at 100% 0%, var(--bg2) 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding:16px 14px 40px;
+    max-width:520px;margin:0 auto;
+  }
+
+  .head{display:flex;align-items:center;gap:9px;margin:2px 2px 16px}
+  .head .dot{width:9px;height:9px;border-radius:50%;background:var(--deliver);box-shadow:0 0 0 4px var(--deliver-soft)}
+  .head h1{
+    font-family:var(--font-display);
+    font-weight:700;font-size:15px;letter-spacing:.02em;
+    margin:0;text-transform:uppercase;
+  }
+
+  /* warehouse picker */
+  .picker{position:relative;margin-bottom:14px}
+  .picker-btn{
+    width:100%;border:1px solid var(--line);background:var(--card);
+    border-radius:var(--radius);padding:15px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    box-shadow:var(--shadow);cursor:pointer;
+    font-family:inherit;color:var(--ink);
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  .picker-btn:active{transform:scale(.99)}
+  .picker-btn .lbl{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+  .picker-btn .cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .picker-btn .val{font-family:var(--font-display);font-weight:600;font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+  .chev{flex:none;width:22px;height:22px;color:var(--muted);transition:transform .25s ease}
+  .picker.open .chev{transform:rotate(180deg)}
+
+  .menu{
+    position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:30;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;
+    max-height:340px;display:flex;flex-direction:column;
+    opacity:0;transform:translateY(-6px) scale(.99);pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+  .picker.open .menu{opacity:1;transform:none;pointer-events:auto}
+  .search{padding:10px;border-bottom:1px solid var(--line)}
+  .search input{
+    width:100%;border:none;outline:none;background:var(--bg);
+    border-radius:12px;padding:11px 13px;font-family:inherit;font-size:15px;color:var(--ink);
+  }
+  .search input::placeholder{color:var(--muted)}
+  .list{overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .opt{
+    padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    cursor:pointer;border-bottom:1px solid var(--line);font-size:15px;
+  }
+  .opt:last-child{border-bottom:none}
+  .opt:active{background:var(--bg)}
+  .opt.sel{background:var(--deliver-soft)}
+  .opt .nm{font-weight:500}
+  .opt .pr{font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+  .opt.sel .pr{color:var(--deliver-ink)}
+
+  /* tariff */
+  .tariff{
+    background:var(--accent);color:var(--bg);
+    border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:var(--shadow);
+  }
+  .tariff .t-cap{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+  .tariff .t-sub{font-size:13px;opacity:.7;margin-top:3px}
+  .tariff .t-val{font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+  .tariff .t-val small{font-size:14px;font-weight:600;margin-left:3px;opacity:.75}
+
+  /* calendar */
+  .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 16px}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .navbtn{
+    width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--bg);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);
+    transition:transform .12s ease,background .12s ease;
+  }
+  .navbtn:active{transform:scale(.92);background:var(--bg2)}
+  .cal-title{font-family:var(--font-display);font-weight:600;font-size:17px;text-align:center}
+  .cal-title span{display:block;font-family:var(--font-body);font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
+
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .dow div{text-align:center;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 0}
+  .dow div.we{color:var(--slot-ink)}
+
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cell{
+    aspect-ratio:1/1;border-radius:13px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;font-size:15px;font-weight:500;
+    position:relative;font-variant-numeric:tabular-nums;
+    border:1px solid transparent;
+  }
+  .cell.empty{visibility:hidden}
+  .cell.deliver{background:var(--deliver-soft);color:var(--deliver-ink);font-weight:700}
+  .cell.slot{background:var(--slot-soft);color:var(--slot-ink);font-weight:700}
+  .cell.both{
+    background:linear-gradient(135deg,var(--deliver-soft) 0 50%,var(--slot-soft) 50% 100%);
+    color:var(--ink);font-weight:700;
+  }
+  .cell .tag{font-size:8px;font-weight:600;letter-spacing:.02em;line-height:1;margin-top:3px;opacity:.85}
+  .cell.deliver .tag{color:var(--deliver)}
+  .cell.slot .tag{color:var(--slot)}
+  .cell.today{box-shadow:0 0 0 2px var(--accent) inset}
+  .cell .num{line-height:1}
+
+  /* legend */
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;padding:0 4px}
+  .leg{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .leg .sw{width:16px;height:16px;border-radius:6px;flex:none}
+  .leg .sw.d{background:var(--deliver-soft);border:1px solid var(--deliver)}
+  .leg .sw.s{background:var(--slot-soft);border:1px solid var(--slot)}
+  .leg .sw.b{background:linear-gradient(135deg,var(--deliver-soft) 0 50%,var(--slot-soft) 50% 100%);border:1px solid var(--line)}
+  .leg b{color:var(--ink);font-weight:600}
+
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:22px;opacity:.8}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="dot"></div>
+    <h1>График поставок</h1>
+  </div>
+
+  <div class="picker" id="picker">
+    <button class="picker-btn" id="pickerBtn" type="button">
+      <span class="lbl">
+        <span class="cap">Склад</span>
+        <span class="val" id="whVal">Выберите склад</span>
+      </span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="menu" id="menu">
+      <div class="search"><input id="search" type="text" placeholder="Поиск склада…" autocomplete="off"></div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+
+  <div class="tariff">
+    <div>
+      <div class="t-cap">Тариф</div>
+      <div class="t-sub">за 1 короб</div>
+    </div>
+    <div class="t-val" id="tariffVal">—</div>
+  </div>
+
+  <div class="cal">
+    <div class="cal-nav">
+      <button class="navbtn" id="prev" type="button" aria-label="Назад">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="cal-title" id="calTitle">—<span id="calSub"></span></div>
+      <button class="navbtn" id="next" type="button" aria-label="Вперёд">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+    <div class="dow">
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div class="we">Сб</div><div class="we">Вс</div>
+    </div>
+    <div class="grid" id="grid"></div>
+
+    <div class="legend">
+      <div class="leg"><span class="sw d"></span><b>Мы везём</b>&nbsp;10:00–15:00</div>
+      <div class="leg"><span class="sw s"></span><b>Таймслот</b></div>
+      <div class="leg"><span class="sw b"></span>Оба</div>
+    </div>
+  </div>
+
+  <div class="foot">Листайте месяцы стрелками • данные по складам</div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+const WD = {"воскресенье":0,"понедельник":1,"вторник":2,"среда":3,"четверг":4,"пятница":5,"суббота":6};
+const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+
+const WAREHOUSES = [
+  {name:"Тула",          deliver:["пятница","вторник"],     slot:["понедельник","среда"],        tariff:400},
+  {name:"Рязань",        deliver:["понедельник","четверг"], slot:["вторник","пятница"],          tariff:400},
+  {name:"Владимир",      deliver:["пятница","среда"],       slot:["понедельник","четверг"],      tariff:400},
+  {name:"Котовск",       deliver:["понедельник","четверг"], slot:["среда","суббота"],            tariff:600},
+  {name:"Казань",        deliver:["пятница","среда"],       slot:["вторник","пятница"],          tariff:600},
+  {name:"Сарапул",       deliver:["понедельник"],           slot:["четверг"],                    tariff:600},
+  {name:"Пенза",         deliver:["понедельник","четверг"], slot:["среда","суббота"],            tariff:600},
+  {name:"Новосемейкино", deliver:["понедельник","четверг"], slot:["четверг","воскресенье"],      tariff:600},
+  {name:"Волгоград",     deliver:["понедельник","четверг"], slot:["четверг","воскресенье"],      tariff:600},
+  {name:"Воронеж",       deliver:["пятница","среда"],       slot:["вторник","пятница"],          tariff:600},
+  {name:"Невинномысск",  deliver:["четверг"],               slot:["воскресенье"],                tariff:600},
+  {name:"Краснодар",     deliver:["пятница","среда"],       slot:["среда","суббота"],            tariff:600},
+  {name:"Екатеринбург",  deliver:["понедельник","четверг"], slot:["пятница","понедельник"],      tariff:800},
+];
+
+// state
+let selected = null;
+let view = new Date();
+view = new Date(view.getFullYear(), view.getMonth(), 1);
+
+// elements
+const $ = id => document.getElementById(id);
+const picker=$("picker"), pickerBtn=$("pickerBtn"), menu=$("menu"), listEl=$("list"), searchEl=$("search");
+const whVal=$("whVal"), tariffVal=$("tariffVal");
+const grid=$("grid"), calTitle=$("calTitle"), calSub=$("calSub");
+
+function haptic(t){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t||"light"); }catch(e){} }
+
+// build picker list
+function renderList(filter){
+  listEl.innerHTML="";
+  const f=(filter||"").trim().toLowerCase();
+  WAREHOUSES.filter(w=>!f || w.name.toLowerCase().includes(f)).forEach(w=>{
+    const o=document.createElement("div");
+    o.className="opt"+(selected&&selected.name===w.name?" sel":"");
+    o.innerHTML=`<span class="nm">${w.name}</span><span class="pr">${w.tariff} ₽</span>`;
+    o.addEventListener("click",()=>{ choose(w); closeMenu(); });
+    listEl.appendChild(o);
+  });
+}
+
+function choose(w){
+  selected=w;
+  whVal.textContent=w.name;
+  tariffVal.innerHTML=`${w.tariff}<small>₽</small>`;
+  haptic("light");
+  renderCalendar();
+}
+
+function openMenu(){ picker.classList.add("open"); searchEl.value=""; renderList(""); setTimeout(()=>searchEl.focus(),120); }
+function closeMenu(){ picker.classList.remove("open"); }
+pickerBtn.addEventListener("click",e=>{ e.stopPropagation(); picker.classList.contains("open")?closeMenu():openMenu(); });
+searchEl.addEventListener("input",()=>renderList(searchEl.value));
+document.addEventListener("click",e=>{ if(!picker.contains(e.target)) closeMenu(); });
+
+// calendar
+function dowSet(arr){ return new Set(arr.map(d=>WD[d])); }
+
+function renderCalendar(){
+  const y=view.getFullYear(), m=view.getMonth();
+  calTitle.childNodes[0].nodeValue = MONTHS[m]+" ";
+  calSub.textContent = y;
+
+  grid.innerHTML="";
+  const first=new Date(y,m,1);
+  const lead=(first.getDay()+6)%7; // Monday-first
+  const days=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  for(let i=0;i<lead;i++){ const c=document.createElement("div"); c.className="cell empty"; grid.appendChild(c); }
+
+  const dSet = selected?dowSet(selected.deliver):new Set();
+  const sSet = selected?dowSet(selected.slot):new Set();
+
+  for(let d=1;d<=days;d++){
+    const date=new Date(y,m,d);
+    const wd=date.getDay();
+    const isD=dSet.has(wd), isS=sSet.has(wd);
+    const c=document.createElement("div");
+    let cls="cell";
+    if(isD&&isS) cls+=" both";
+    else if(isD) cls+=" deliver";
+    else if(isS) cls+=" slot";
+    if(date.getTime()===today.getTime()) cls+=" today";
+    c.className=cls;
+    let tag="";
+    if(isD&&isS) tag="везём+слот";
+    else if(isD) tag="везём";
+    else if(isS) tag="слот";
+    c.innerHTML=`<span class="num">${d}</span>${tag?`<span class="tag">${tag}</span>`:""}`;
+    grid.appendChild(c);
+  }
+}
+
+$("prev").addEventListener("click",()=>{ view=new Date(view.getFullYear(),view.getMonth()-1,1); haptic("light"); renderCalendar(); });
+$("next").addEventListener("click",()=>{ view=new Date(view.getFullYear(),view.getMonth()+1,1); haptic("light"); renderCalendar(); });
+
+// init theme + tg
+function applyTheme(){
+  const dark = tg ? tg.colorScheme==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.classList.toggle("dark",dark);
+}
+if(tg){
+  try{ tg.ready(); tg.expand(); }catch(e){}
+  try{ tg.onEvent && tg.onEvent("themeChanged",applyTheme); }catch(e){}
+}
+applyTheme();
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme);
+
+renderList("");
+renderCalendar();
+</script>
+</body>
+</html>
